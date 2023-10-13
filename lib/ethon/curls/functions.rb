@@ -8,7 +8,7 @@ module Ethon
 
       # :nodoc:
       def self.extended(base)
-        if base.ffi_libraries.any? { |l| l.match?(/impersonate/) }
+        if base.ffi_libraries.any? { |l| l.name[/impersonate/] }
           base.attach_function :easy_impersonate,         :curl_easy_impersonate,    [:pointer, :string, :int],      :int
         end
         base.attach_function :global_init,                :curl_global_init,         [:long],                        :int
