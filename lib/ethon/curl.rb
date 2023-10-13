@@ -89,11 +89,11 @@ module Ethon
 
     # Add config to configure impersonate browser
     module Config
-      def impersonate=(impersonate)
+      def self.impersonate=(impersonate)
         Thread.current[:curl_easy_impersonate] = impersonate
       end
 
-      def impersonate
+      def self.impersonate
         Thread.current[:curl_easy_impersonate]
       end
     end

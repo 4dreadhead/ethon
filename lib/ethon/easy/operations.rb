@@ -72,8 +72,11 @@ module Ethon
         impersonate = Curl::Config.impersonate
         return easy_pointer unless impersonate
 
+        raise Ethon::Errors::ImpersonateFailed.new(impersonate, "libcurl-impersonate.so not found") unless
+          Curl.respond_to?(:easy_impersonate)
+
         code = Curl.easy_impersonate(easy_pointer, impersonate, 0)
-        raise ImpersonateFailed.new(impersonate, code) unless result == 0
+        raise Ethon::Errors::ImpersonateFailed.new(impersonate, code) unless result == 0
 
         easy_pointer
       end
