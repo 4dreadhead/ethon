@@ -11,13 +11,18 @@ module Ethon
       #
       # @return [ FFI::Pointer ] A pointer to the curl easy handle.
       def handle
-        @handle ||= FFI::AutoPointer.new(Curl.easy_init, Curl.method(:easy_cleanup))
+        @handle ||= set_impersonate(
+          FFI::AutoPointer.new(
+            Curl.easy_init,
+            Curl.method(:easy_cleanup)
+          )
+        )
       end
 
       # Sets a pointer to the curl easy handle.
       # @param [ ::FFI::Pointer ] Easy handle that will be assigned.
       def handle=(h)
-        @handle = h
+        @handle = set_impersonate(h)
       end
 
       # Perform the easy request.
@@ -58,6 +63,19 @@ module Ethon
           "Easy#prepare. It's going to be removed "+
           "in future versions."
         )
+      end
+
+      # Set impersonate browser from Ethon::Curl::Config
+      #
+      # @param [ ::FFI::Pointer ] easy_pointer pointer to easy instance.
+      def set_impersonate(easy_pointer)
+        impersonate = Curl::Config.impersonate
+        return easy_pointer unless impersonate
+
+        code = Curl.easy_impersonate(easy_pointer, impersonate, 0)
+        raise ImpersonateFailed.new(impersonate, code) unless result == 0
+
+        easy_pointer
       end
     end
   end

@@ -8,6 +8,11 @@ module Ethon
 
       # :nodoc:
       def self.extended(base)
+        begin
+          base.attach_function :easy_impersonate,           :curl_easy_impersonate,    [:pointer, :string, :int],      :int
+        rescue FFI::NotFoundError => error
+          Kernel.warn "Couldn't import :curl_easy_impersonate function: #{error.inspect}"
+        end
         base.attach_function :global_init,                :curl_global_init,         [:long],                        :int
         base.attach_function :global_cleanup,             :curl_global_cleanup,      [],                             :void
         base.attach_function :free,                       :curl_free,                [:pointer],                     :void
