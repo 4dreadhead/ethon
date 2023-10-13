@@ -76,7 +76,7 @@ module Ethon
           Curl.respond_to?(:easy_impersonate)
 
         code = Curl.easy_impersonate(easy_pointer, impersonate, 0)
-        raise Ethon::Errors::ImpersonateFailed.new(impersonate, code) unless result == 0
+        raise Ethon::Errors::ImpersonateFailed.new(impersonate, code) unless code == 0
 
         easy_pointer
       end
