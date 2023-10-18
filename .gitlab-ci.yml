@@ -15,24 +15,24 @@ stages:
     - docker login -u $CI_REGISTRY_USER -p $CI_JOB_TOKEN $CI_REGISTRY
   script:
     - docker pull $IMAGE || true
-    - docker build --cache-from $IMAGE -t $IMAGE -f $DOCKERFILE .
+    - docker build --cache-from $IMAGE --build-arg PORT=$PORT -t $IMAGE -f $DOCKERFILE .
     - docker push $IMAGE
 
 .pull-bundle-cache:
   artifacts:
     paths:
-      - ${BUNDLE_PATH}
+      - $BUNDLE_PATH
 
 .bundle-install: &bundle-install
   - bundle config set --local without "development"
-  - bundle config --local path ${BUNDLE_PATH}
+  - bundle config --local path $BUNDLE_PATH
   - bundle install --prefer-local --quiet --jobs $(nproc) "${FLAGS[@]}"
 
 .bundle-update: &bundle-update
   artifacts:
     expire_in: 30d
     paths:
-      - ${BUNDLE_PATH}
+      - $BUNDLE_PATH
     when: on_success
   except:
     - main
@@ -45,6 +45,7 @@ variables:
   SAST_DEFAULT_ANALYZERS: brakeman
   SAST_EXCLUDED_ANALYZERS: eslint,semgrep,nodejs-scan
   SECRET_DETECTION_EXCLUDED_PATHS: vendor,node_modules
+  PORT: 3000
 
 include:
 - template: Security/SAST.gitlab-ci.yml

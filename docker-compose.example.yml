@@ -5,6 +5,8 @@ services:
       cache_from:
         - registry.gitlab.evosoft.xyz/reklama/chat-bots/intercom-support
       context: .
+      args:
+        PORT: 3000
     environment:
       - LOGLEVEL=debug
       - RAKE_ENV=development
