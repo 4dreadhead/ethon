@@ -93,6 +93,13 @@ multi.add(easy)
 multi.perform
 ```
 
+## Impersonate
+
+It can be used with [curl-impersonate](https://github.com/lwthiker/curl-impersonate).
+
+Ready to use:
+* `libcurl-impersonate-chrome.so`
+
 ##  LICENSE
 
 (The MIT License)
