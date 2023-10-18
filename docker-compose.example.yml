@@ -1,0 +1,18 @@
+version: "3.7"
+services:
+  app:
+    build:
+      cache_from:
+        - registry.gitlab.evosoft.xyz/reklama/chat-bots/intercom-support
+      context: .
+    environment:
+      - LOGLEVEL=debug
+      - RAKE_ENV=development
+    image: registry.gitlab.evosoft.xyz/reklama/chat-bots/intercom-support
+    command: "puma"
+    network_mode: "host"
+    ports:
+      - 3000:3000
+    volumes:
+      - ./tmp/pids:/var/app/tmp/pids
+      - ./vendor:/var/app/vendor

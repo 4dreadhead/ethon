@@ -1,0 +1,6 @@
+/tmp/pids/*
+!/tmp/pids/.keep
+/vendor/*
+!/vendor/.keep
+/docker-compose.yml
+/.env
