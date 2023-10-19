@@ -10,6 +10,8 @@ services:
     environment:
       - LOGLEVEL=debug
       - RAKE_ENV=development
+      - TELEGRAM_TOKEN=
+      - REDIS_URL=redis://redis:6379
     image: registry.gitlab.evosoft.xyz/reklama/chat-bots/intercom-support
     command: "puma"
     network_mode: "host"
@@ -18,3 +20,9 @@ services:
     volumes:
       - ./tmp/pids:/var/app/tmp/pids
       - ./vendor:/var/app/vendor
+  redis:
+    image: redis:5-alpine
+    ports:
+      - 127.0.0.1:6379:6379
+    volumes:
+      - ./redis/data:/data

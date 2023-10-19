@@ -2,5 +2,7 @@
 !/tmp/pids/.keep
 /vendor/*
 !/vendor/.keep
+/scripts
 /docker-compose.yml
 /.env
+/Makefile
