@@ -1,7 +1,13 @@
 stages:
   - prepare
+  - rubocop
   - test
   - build
+
+.test:
+  variables:
+    IMAGE: $CI_REGISTRY_IMAGE:test-3.2.2
+    BUNDLE_PATH: vendor
 
 .production:
   variables:
@@ -40,6 +46,35 @@ stages:
   script:
     - *bundle-install
   stage: prepare
+
+build-test-image:
+  except:
+    - main
+  extends:
+    - .test
+  image: docker:24.0.2
+  services:
+    - docker:24.0.2-dind
+  stage: prepare
+  before_script:
+    - docker login -u $CI_REGISTRY_USER -p $CI_JOB_TOKEN $CI_REGISTRY
+  script:
+    - docker build -t IMAGE -f spec/Dockerfile .
+    - docker push IMAGE
+  when: manual
+
+rubocop:
+  before_script:
+  - *bundle-install
+  except:
+    - main
+  extends:
+  - .test
+  - .pull-bundle-cache
+  image: $IMAGE
+  script:
+    - bundle exec rubocop -P
+  stage: rubocop
 
 variables:
   SAST_DEFAULT_ANALYZERS: brakeman
