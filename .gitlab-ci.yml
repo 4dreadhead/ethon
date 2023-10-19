@@ -7,7 +7,7 @@ stages:
 .test:
   variables:
     IMAGE: $CI_REGISTRY_IMAGE:test-3.2.2
-    BUNDLE_PATH: vendor
+    BUNDLE_PATH: /var/app/vendor
 
 .production:
   variables:
