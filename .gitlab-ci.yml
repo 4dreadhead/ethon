@@ -121,5 +121,6 @@ deploy:
   extends:
     - .production
     - .deploy
+  when: manual
   script:
-    - docker compose -f /var/www/intercom-support/docker-compose.yml up app -d
+    - docker compose -f /var/www/intercom-support/docker-compose.yml up -d app

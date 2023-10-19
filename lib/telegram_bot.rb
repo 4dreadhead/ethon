@@ -83,7 +83,7 @@ class TelegramBot
         inline_keyboard: [
           [
             text: "Перейти",
-            url: "http://128.140.45.118/link"
+            url: "http://128.140.45.118:3000/link"
           ]
         ],
         resize_keyboard: true
