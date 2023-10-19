@@ -3,6 +3,7 @@ stages:
   - rubocop
   - test
   - build
+  - deploy
 
 .test:
   variables:
@@ -25,6 +26,14 @@ stages:
     - docker pull $IMAGE || true
     - docker build --cache-from $IMAGE --build-arg PORT=$PORT -t $IMAGE -f $DOCKERFILE .
     - docker push $IMAGE
+
+.deploy:
+  stage: deploy
+  before_script:
+    - docker login -u $CI_REGISTRY_USER -p $CI_JOB_TOKEN $CI_REGISTRY
+  after_script:
+    - docker system prune -a -f --volumes
+
 
 .pull-bundle-cache:
   artifacts:
@@ -107,3 +116,10 @@ build:
     - docker push $CI_REGISTRY_$IMAGE:$CI_COMMIT_SHA
   variables:
     DOCKERFILE: Dockerfile
+
+deploy:
+  extends:
+    - .production
+    - .deploy
+  script:
+    - docker compose -f /var/www/intercom-support/docker-compose.yml up app -d

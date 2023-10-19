@@ -16,6 +16,7 @@ WORKDIR /var/app
 
 COPY config config
 COPY lib lib
+COPY templates templates
 COPY tmp tmp
 COPY config.ru Gemfile Gemfile.lock init.rb ./
 
