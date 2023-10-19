@@ -59,8 +59,13 @@ build-test-image:
   before_script:
     - docker login -u $CI_REGISTRY_USER -p $CI_JOB_TOKEN $CI_REGISTRY
   script:
-    - docker build -t IMAGE -f spec/Dockerfile .
-    - docker push IMAGE
+    - docker build -t $IMAGE -f spec/Dockerfile .
+    - docker push $IMAGE
+  when: manual
+
+update-bundle-cache-force:
+  extends: .test
+  <<: *bundle-update
   when: manual
 
 rubocop:
@@ -95,7 +100,7 @@ build:
   only:
     - main
   after_script:
-    - docker tag $IMAGE $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA
-    - docker push $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA
+    - docker tag $IMAGE $CI_REGISTRY_$IMAGE:$CI_COMMIT_SHA
+    - docker push $CI_REGISTRY_$IMAGE:$CI_COMMIT_SHA
   variables:
     DOCKERFILE: Dockerfile
