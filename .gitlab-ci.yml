@@ -10,6 +10,8 @@ stages:
     BUNDLE_PATH: vendor
 
 .production:
+  tags:
+    - intercom-support-production
   variables:
     IMAGE: $CI_REGISTRY_IMAGE
 
@@ -97,8 +99,9 @@ build:
   extends:
     - .production
     - .build
-  only:
-    - main
+  # only:
+    # - main
+  when: manual
   after_script:
     - docker tag $IMAGE $CI_REGISTRY_$IMAGE:$CI_COMMIT_SHA
     - docker push $CI_REGISTRY_$IMAGE:$CI_COMMIT_SHA
