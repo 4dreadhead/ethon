@@ -1,0 +1,22 @@
+require:
+  - rubocop-performance
+
+AllCops:
+  Exclude:
+    - "tmp/**/*"
+    - "vendor/**/*"
+    - ".git/**/*"
+
+  # Include common Ruby source files.
+  Include:
+    - "**/*.rb"
+    - "**/*.rake"
+    - "**/*.ru"
+    - "**/*.spec"
+    - "**/.irbrc"
+    - "**/Gemfile"
+    - "**/Rakefile"
+
+  StyleGuideBaseURL: https://rubystyle.guide
+  DisabledByDefault: true
+  TargetRubyVersion: 3.2.2
