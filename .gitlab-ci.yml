@@ -30,7 +30,7 @@ stages:
       - $BUNDLE_PATH
 
 .bundle-install: &bundle-install
-  - bundle config set --local without "development test"
+  - bundle config set --local without "development"
   - bundle config --local path $BUNDLE_PATH
   - bundle install --prefer-local --quiet --jobs $(nproc) "${FLAGS[@]}"
 

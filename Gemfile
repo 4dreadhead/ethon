@@ -13,7 +13,7 @@ gem "faraday", "~> 1.10"
 gem "faraday_middleware", "~> 1.2"
 gem "redis", "~> 5.0"
 
-group :development, :test do
+group :test do
   gem "rubocop"
   gem "rubocop-performance"
 end
