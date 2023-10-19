@@ -50,7 +50,8 @@ class Intercom
 
   # @param [Hash] message
   def ping(message)
-    telegram_bot.send_message message: message.dig(:data, :item, :message)
+    telegram_bot.send_message message: message.dig(:data, :item, :message),
+                              keyboard: :link
   end
 
   # @param [Hash] message

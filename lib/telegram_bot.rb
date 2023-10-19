@@ -23,7 +23,10 @@ class TelegramBot
   # @param [Hash] body
   def webhook!(body)
     message = body[:message]
-    message ||= body[:callback_query]
+    chat_id = message.dig :chat, :id
+    return logger.error "chat_id not found in message: #{message.to_json}" unless chat_id
+
+    @chat = Chat.find_or_initialize(chat_id: chat_id, redis:)
     Strategies.find(bot: self, message:, logger:, redis:).perform
   end
 
@@ -71,6 +74,16 @@ class TelegramBot
           [
             text: "Поделиться номером телефона",
             request_contact: true
+          ]
+        ],
+        resize_keyboard: true
+      }
+    when :link
+      {
+        inline_keyboard: [
+          [
+            text: "Перейти",
+            url: "http://128.140.45.118/link"
           ]
         ],
         resize_keyboard: true

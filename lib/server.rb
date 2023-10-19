@@ -11,6 +11,10 @@ get "/healthcheck" do
   halt 204
 end
 
+get "/link" do
+  send_file "templates/link.html"
+end
+
 post "/webhook/telegram" do
   logger.info "/webhook/telegram"
   request_body = JSON.parse request.body.read, symbolize_names: true rescue nil
