@@ -143,4 +143,5 @@ deploy:
     - .deploy
   when: manual
   script:
+    - docker compose pull
     - docker compose -f /var/www/intercom-support/docker-compose.yml up -d
