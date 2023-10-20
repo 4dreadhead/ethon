@@ -79,8 +79,8 @@ build-test-image:
   when: manual
 
 build-nginx:
-  only:
-    - main
+  #only:
+  #  - main
   image: docker:24.0.2
   services:
     - docker:24.0.2-dind
