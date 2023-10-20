@@ -1,0 +1,53 @@
+networks:
+  frontend:
+    attachable: true
+  backend:
+
+version: "3.7"
+services:
+  app:
+    depends_on:
+      - redis
+    deploy:
+      update_config:
+        delay: 30s
+        order: start-first
+    environment:
+      - LOGLEVEL=debug
+      - RAKE_ENV=production
+      - REDIS_URL=redis://redis:6379
+      - SERVER_URL=http://128.140.45.118
+    image: registry.gitlab.evosoft.xyz/reklama/chat-bots/intercom-support
+    command: "puma"
+    restart: always
+    networks:
+      - backend
+    volumes:
+      - /var/www/vendor:/var/app/vendor
+  redis:
+    image: redis:5-alpine
+    restart: always
+    networks:
+      - backend
+    volumes:
+      - /var/www/redis/data:/data
+  nginx: # https://hub.docker.com/_/nginx
+    depends_on:
+      - app
+    deploy:
+      restart_policy:
+        condition: on-failure
+        delay: 10s
+        max_attempts: 5
+        window: 30s
+      update_config:
+        parallelism: 2
+        delay: 10s
+        order: start-first
+    image: registry.gitlab.evosoft.xyz/reklama/chat-bots/intercom-support:nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    networks:
+      - frontend
+      - backend

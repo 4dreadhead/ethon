@@ -41,7 +41,7 @@ stages:
 
 
 .pull-bundle-cache:
-  artifacts:
+  cache:
     paths:
       - $BUNDLE_PATH
 
@@ -51,8 +51,7 @@ stages:
   - bundle install --prefer-local --quiet --jobs $(nproc) "${FLAGS[@]}"
 
 .bundle-update: &bundle-update
-  artifacts:
-    expire_in: 30d
+  cache:
     paths:
       - $BUNDLE_PATH
     when: on_success

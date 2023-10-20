@@ -83,7 +83,7 @@ class TelegramBot
         inline_keyboard: [
           [
             text: "Перейти",
-            url: "http://128.140.45.118/link"
+            url: [server_url, "/intercom-chat.html"].join
           ]
         ],
         resize_keyboard: true
@@ -102,5 +102,10 @@ class TelegramBot
   # @return [String]
   def base_cache_key
     self.class.name
+  end
+
+  # @return [String]
+  def server_url
+    ENV.fetch "SERVER_URL"
   end
 end
