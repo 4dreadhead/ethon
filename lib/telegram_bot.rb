@@ -83,7 +83,7 @@ class TelegramBot
         inline_keyboard: [
           [
             text: "Перейти",
-            url: [server_url, "/intercom-chat.html"].join
+            url: [server_url, "/intercom-chat"].join
           ]
         ],
         resize_keyboard: true

@@ -11,8 +11,8 @@ get "/healthcheck" do
   halt 204
 end
 
-get "/link" do
-  send_file "templates/link.html"
+get "/intercom-chat" do
+  send_file "templates/intercom-chat.html"
 end
 
 post "/webhook/telegram" do
