@@ -11,6 +11,8 @@ stages:
     BUNDLE_PATH: vendor
 
 .production:
+  environment:
+    name: production
   tags:
     - intercom-support-production
   variables:
@@ -38,7 +40,6 @@ stages:
     - docker login -u $CI_REGISTRY_USER -p $CI_JOB_TOKEN $CI_REGISTRY
   after_script:
     - docker system prune -a -f --volumes
-
 
 .pull-bundle-cache:
   cache:
