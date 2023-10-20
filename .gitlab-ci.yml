@@ -24,7 +24,12 @@ stages:
     - docker login -u $CI_REGISTRY_USER -p $CI_JOB_TOKEN $CI_REGISTRY
   script:
     - docker pull $IMAGE || true
-    - docker build --cache-from $IMAGE --build-arg PORT=$PORT -t $IMAGE -f $DOCKERFILE .
+    - docker build
+      --cache-from $IMAGE
+      --build-arg PORT=$PORT
+      --build-arg TELEGRAM_TOKEN=$TELEGRAM_TOKEN
+      -t $IMAGE
+      -f $DOCKERFILE .
     - docker push $IMAGE
 
 .deploy:

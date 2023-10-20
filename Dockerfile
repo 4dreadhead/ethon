@@ -1,7 +1,9 @@
 FROM ruby:3.2.2-bullseye
 
 ARG PORT
+ARG TELEGRAM_TOKEN
 ENV PORT $PORT
+ENV TELEGRAM_TOKEN $TELEGRAM_TOKEN
 
 RUN apt-get install -qq -y curl
 
