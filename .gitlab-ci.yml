@@ -16,10 +16,6 @@ stages:
   variables:
     IMAGE: $CI_REGISTRY_IMAGE
 
-.nginx:
-  variables:
-    IMAGE: $CI_REGISTRY_IMAGE:nginx
-
 .build:
   image: docker:24.0.2
   services:
@@ -79,10 +75,8 @@ build-test-image:
   when: manual
 
 build-nginx:
-  except:
+  only:
     - main
-  extends:
-    - .nginx
   image: docker:24.0.2
   services:
     - docker:24.0.2-dind
@@ -93,6 +87,8 @@ build-nginx:
     - docker build -t $IMAGE ./nginx
     - docker push $IMAGE
   when: manual
+  variables:
+    IMAGE: $CI_REGISTRY_IMAGE:nginx
 
 update-bundle-cache-force:
   extends: .test
@@ -143,4 +139,4 @@ deploy:
     - .deploy
   when: manual
   script:
-    - docker compose -f /var/www/intercom-support/docker-compose.yml up -d app
+    - docker compose -f /var/www/intercom-support/docker-compose.yml up -d
