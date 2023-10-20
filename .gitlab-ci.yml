@@ -16,6 +16,10 @@ stages:
   variables:
     IMAGE: $CI_REGISTRY_IMAGE
 
+.nginx:
+  variables:
+    IMAGE: $CI_REGISTRY_IMAGE:nginx
+
 .build:
   image: docker:24.0.2
   services:
@@ -71,6 +75,22 @@ build-test-image:
     - docker login -u $CI_REGISTRY_USER -p $CI_JOB_TOKEN $CI_REGISTRY
   script:
     - docker build -t $IMAGE -f spec/Dockerfile .
+    - docker push $IMAGE
+  when: manual
+
+build-nginx:
+  except:
+    - main
+  extends:
+    - .nginx
+  image: docker:24.0.2
+  services:
+    - docker:24.0.2-dind
+  stage: prepare
+  before_script:
+    - docker login -u $CI_REGISTRY_USER -p $CI_JOB_TOKEN $CI_REGISTRY
+  script:
+    - docker build -t $IMAGE -f ./nginx
     - docker push $IMAGE
   when: manual
 
