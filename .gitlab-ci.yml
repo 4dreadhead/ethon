@@ -26,8 +26,8 @@ stages:
     - docker pull $IMAGE || true
     - docker build
       --cache-from $IMAGE
-      --build-arg PORT=$PORT
       --build-arg TELEGRAM_TOKEN=$TELEGRAM_TOKEN
+      --build-arg INTERCOM_APP_ID=$INTERCOM_APP_ID
       -t $IMAGE
       -f $DOCKERFILE .
     - docker push $IMAGE
@@ -116,7 +116,6 @@ variables:
   SAST_DEFAULT_ANALYZERS: brakeman
   SAST_EXCLUDED_ANALYZERS: eslint,semgrep,nodejs-scan
   SECRET_DETECTION_EXCLUDED_PATHS: vendor,node_modules
-  PORT: 3000
 
 include:
 - template: Security/SAST.gitlab-ci.yml

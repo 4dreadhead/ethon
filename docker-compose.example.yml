@@ -11,15 +11,17 @@ services:
         - registry.gitlab.evosoft.xyz/reklama/chat-bots/intercom-support
       context: .
       args:
-        PORT: 3000
         TELEGRAM_TOKEN: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+        INTERCOM_APP_ID: xxxx
     depends_on:
       - redis
     environment:
       - LOGLEVEL=debug
       - RAKE_ENV=development
       # - TELEGRAM_TOKEN=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+      # - INTERCOM_APP_ID=xxxx
       - REDIS_URL=redis://redis:6379
+      - SERVER_URL=https://localhost
     image: registry.gitlab.evosoft.xyz/reklama/chat-bots/intercom-support
     command: "puma"
     networks:
