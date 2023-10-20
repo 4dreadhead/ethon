@@ -1,7 +1,5 @@
-FROM nginx:alpine
+FROM umputun/nginx-le:v1.4.2
 
-RUN rm /etc/nginx/conf.d/default.conf
-COPY conf.d /etc/nginx/conf.d
-COPY nginx.conf /etc/nginx/nginx.conf
+COPY service.conf /etc/nginx/service.conf
 
 HEALTHCHECK CMD curl -f http://localhost/healthcheck

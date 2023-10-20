@@ -79,8 +79,8 @@ build-test-image:
   when: manual
 
 build-nginx:
-  only:
-    - main
+  #only:
+  #  - main
   image: docker:24.0.2
   services:
     - docker:24.0.2-dind
@@ -142,4 +142,5 @@ deploy:
     - .deploy
   when: manual
   script:
+    - docker compose -f /var/www/intercom-support/docker-compose.yml pull
     - docker compose -f /var/www/intercom-support/docker-compose.yml up -d
