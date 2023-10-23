@@ -96,12 +96,17 @@ build-nginx:
   variables:
     IMAGE: $CI_REGISTRY_IMAGE:nginx
 
-update-bundle-cache-force:
+update-bundle-cache:
   extends: .test
   <<: *bundle-update
   only:
     changes:
     - Gemfile.lock
+
+update-bundle-cache-force:
+  extends: .test
+  <<: *bundle-update
+  when: manual
 
 rubocop:
   before_script:
