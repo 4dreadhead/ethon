@@ -183,4 +183,4 @@ deploy:
     - docker compose -f /var/www/intercom-support/docker-compose.yml up -d app
   after_script:
     - |
-      curl $SENTRY_RELEASE_URL -X POST -H "Content-Type: application/json" -d "{\"version\": \"$CI_COMMIT_SHA\"}"
+      curl -s $SENTRY_RELEASE_URL -X POST -H "Content-Type: application/json" -d "{\"version\": \"$CI_COMMIT_SHA\"}" > /dev/null
