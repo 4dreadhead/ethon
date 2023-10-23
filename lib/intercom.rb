@@ -196,6 +196,6 @@ class Intercom
 
   # @return [String]
   def server_url
-    ENV.fetch "SERVER_URL"
+    @server_url ||= ENV.fetch "SERVER_URL"
   end
 end

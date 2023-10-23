@@ -129,7 +129,6 @@ build:
     - .build
   only:
     - main
-  when: manual
   after_script:
     - docker tag $IMAGE $CI_REGISTRY_$IMAGE:$CI_COMMIT_SHA
     - docker push $CI_REGISTRY_$IMAGE:$CI_COMMIT_SHA
