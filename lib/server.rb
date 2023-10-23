@@ -6,6 +6,7 @@ require "erb"
 
 require_relative "cached"
 require_relative "logging"
+require_relative "sentry"
 require_relative "intercom"
 
 get "/healthcheck" do
@@ -42,6 +43,7 @@ post "/webhook/telegram" do
 rescue => error
   logger.error error.message
   logger.error error.backtrace
+  Sentry.capture_exception error
 ensure
   halt 200
 end
@@ -56,6 +58,7 @@ post "/webhook/intercom" do
 rescue => error
   logger.error error.message
   logger.error error.backtrace
+  Sentry.capture_exception error
 ensure
   halt 200
 end
