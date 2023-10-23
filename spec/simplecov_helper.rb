@@ -5,6 +5,7 @@ require "simplecov"
 if ENV["COVERAGE"]
   SimpleCov.start do
     add_filter "spec"
+    add_filter "vendor"
 
     add_group "Lib", "lib"
     add_group "Parsers", "parsers"
