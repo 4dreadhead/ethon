@@ -30,6 +30,7 @@ stages:
     - docker build
       --cache-from $IMAGE
       --build-arg TELEGRAM_TOKEN=$TELEGRAM_TOKEN
+      --build-arg SENTRY_DSN=$SENTRY_DSN
       -t $IMAGE
       -f $DOCKERFILE .
     - docker push $IMAGE

@@ -12,6 +12,7 @@ services:
       context: .
       args:
         TELEGRAM_TOKEN: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+        SENTRY_DSN: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
     depends_on:
       - redis
     environment:

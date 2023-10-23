@@ -47,3 +47,4 @@ bundle exec puma
 * __SERVER_URL__: `https://intercom-bot.evosoft.xyz`;
 * __INTERCOM_APP_ID__: `efm7fqqz`, look for in the `Developer Hub`, https://app.intercom.com/a/apps/`efm7fqqz`/developer-hub;
 * __TELEGRAM_TOKEN__: look for in `gitlab.evosoft.xyz/reklama/chat-bots/intercom-support` -> `Settings`, -> `CI/CD` -> `Variables`;
+* __SENTRY_DSN__, look for [chat-bots-intercom-support](https://sentry.evosoft.xyz/organizations/evosoft/projects/chat-bots-intercom-support/?project=90).

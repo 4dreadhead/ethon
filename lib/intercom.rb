@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require "time"
-
 require_relative "telegram_bot"
 
 # A class for intercom
@@ -39,10 +37,12 @@ class Intercom
   def webhook!(message)
     case message[:topic]
     when "ping" then ping message
-    when "conversation.admin.replied" then conversation_admin_replied message
-    when "conversation.user.replied"  then conversation_user_replied message
+    when "conversation.admin.replied"
+      conversation_admin_replied message
+    when "conversation.user.replied", "conversation.user.created"
+      conversation_user_replied message
     else
-      other message
+      logger.warn "An unforeseen topic: #{message[:topic].inspect}"
     end
   end
 
@@ -56,33 +56,12 @@ class Intercom
     end
   end
 
-  # A webhook about message from an admin, send a notification to a client
+  # Create a new message from admin, send a notification to a client
   # @param [Hash] message
   def conversation_admin_replied(message)
-    unless message.is_a? Hash
-      logger.warn "A message is not a Hash: #{message.inspect}"
-      return self
-    end
-
-    item = message.dig :data, :item
-    unless item.is_a? Hash
-      logger.warn "An item is not a Hash: #{item.inspect}"
-      return self
-    end
-
-    source = item.dig :source
-    unless source.is_a? Hash
-      logger.warn "A source is not a Hash: #{source.inspect}"
-      return self
-    end
-
-    author = source.dig :author
-    unless author.is_a? Hash
-      logger.warn "An author is not a Hash: #{author.inspect}"
-      return self
-    end
-
-    chat_id = Chat.email_to_id(email: author[:email], redis:)
+    item = webhook_item! message
+    author = webhook_author! item
+    chat_id = TelegramBot::Chat.email_to_id(email: author[:email], redis:)
     telegram_bot.send_message(
       message: ["№", item[:id], ": ", "Вам ответил оператор!"].join,
       keyboard: :link_to_chat,
@@ -91,32 +70,11 @@ class Intercom
     )
   end
 
-  # A webhook about message from a client, send a notification to admins
+  # Create a new message from a client, send a notification to admins
   # @param [Hash] message
   def conversation_user_replied(message)
-    unless message.is_a? Hash
-      logger.warn "A message is not a Hash: #{message.inspect}"
-      return self
-    end
-
-    item = message.dig :data, :item
-    unless item.is_a? Hash
-      logger.warn "An item is not a Hash: #{item.inspect}"
-      return self
-    end
-
-    source = item.dig :source
-    unless source.is_a? Hash
-      logger.warn "A source is not a Hash: #{source.inspect}"
-      return self
-    end
-
-    author = source.dig :author
-    unless author.is_a? Hash
-      logger.warn "An author is not a Hash: #{author.inspect}"
-      return self
-    end
-
+    item = webhook_item! message
+    author = webhook_author! item
     telegram_bot.admin_ids.each do |chat_id|
       telegram_bot.send_message(
         message: ["№", item[:id], ": ", author[:name], " (", author[:email], ") написал!"].join,
@@ -127,41 +85,33 @@ class Intercom
     end
   end
 
+  # @param [Hash] item
+  # @return [Hash]
+  def webhook_author!(item)
+    source = item.dig :source
+    raise "A source is not a Hash: #{source.inspect}" unless source.is_a? Hash
+
+    author = source.dig :author
+    raise "An author is not a Hash: #{author.inspect}" unless author.is_a? Hash
+
+    author
+  end
+
+  # @param [Hash] message
+  # @return [Hash]
+  def webhook_item!(message)
+    raise "A message is not a Hash: #{message.inspect}" unless message.is_a? Hash
+
+    item = message.dig :data, :item
+    raise "An item is not a Hash: #{item.inspect}" unless item.is_a? Hash
+
+    item
+  end
+
   # @param [Integer] id
   # @return [String]
   def conversation_url(id)
     [APPS_URL, self.class.app_id, "/conversations/", id].join
-  end
-
-  # @param [Hash] message
-  def other(message)
-    unless message.is_a? Hash
-      logger.warn "A message is not a Hash: #{message.inspect}"
-      return self
-    end
-
-    data = message.dig :data
-    unless data.is_a? Hash
-      logger.warn "A data is not a Hash: #{data.inspect}"
-      return self
-    end
-
-    item = data.dig :item
-    unless item.is_a? Hash
-      logger.warn "An item is not a Hash: #{item.inspect}"
-      return self
-    end
-
-    source = item.dig :source
-    source ||= item.dig :conversation, :source
-    author = {}
-    author = source.dig :author if source.is_a? Hash
-    message_parts = ["#{message[:topic]}"]
-    message_parts << " от #{author[:name]} (#{author[:email]})" if author[:id]
-    telegram_bot.send_message(
-      message: message_parts.join,
-      email: author[:email]
-    )
   end
 
   def telegram_bot
