@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+require_relative "intercom_api"
 require_relative "telegram_bot"
 
 # A class for intercom
@@ -33,15 +34,18 @@ class Intercom
     @redis = redis
   end
 
-  # TODO: ticket.state.updated
   # @param [Hash] message
   def webhook!(message)
     case message[:topic]
     when "ping" then ping message
     when "conversation.admin.replied"
       conversation_admin_replied message
-    when "conversation.user.replied", "conversation.user.created"
+    when "conversation.user.created"
+      conversation_user_created message
+    when "conversation.user.replied"
       conversation_user_replied message
+    when "ticket.state.updated"
+      ticket_state_updated message
     else
       logger.warn "An unforeseen topic: #{message[:topic].inspect}"
     end
@@ -57,7 +61,7 @@ class Intercom
     end
   end
 
-  # Create a new message from admin, send a notification to a client
+  # Create a new message from an admin, send a notification to a client
   # @param [Hash] message
   def conversation_admin_replied(message)
     item = webhook_item! message
@@ -71,18 +75,58 @@ class Intercom
     )
   end
 
+  # Create a new conversation from a client, send a notification to admins
+  # @param [Hash] message
+  def conversation_user_created(message)
+    item = webhook_item! message
+    author = webhook_author! item
+    add_conversation_author conversation_id: item[:id], email: author[:email] if item[:id] && author[:email]
+    notify_admins(
+      item_id: item[:id],
+      message: ["№", item[:id], ": ", author[:name], " (", author[:email], ") написал!"].join
+    )
+  end
+
   # Create a new message from a client, send a notification to admins
   # @param [Hash] message
   def conversation_user_replied(message)
     item = webhook_item! message
     author = webhook_author! item
+    notify_admins(
+      item_id: item[:id],
+      message: ["№", item[:id], ": ", author[:name], " (", author[:email], ") написал!"].join
+    )
+  end
+
+  # Change a ticket status from an admin, send a notification to client
+  # @param [Hash] message
+  def ticket_state_updated(message)
+    item = webhook_item! message
+    ticket_state = item[:ticket_state]
+    chat_id = TelegramBot::Chat.email_to_id(
+      email: get_conversation_autor(item[:id]),
+      redis:
+    )
+    raise "An author of conversation #{item[:id]} not found!" unless chat_id
+
+    telegram_bot.send_message(
+      message: ["Статус обращения №", item[:id], " изменен на ", ticket_state, "!"].join,
+      keyboard: :link_to_chat,
+      chat_id:,
+      url: self.class.chat_url(chat_id)
+    )
+  end
+
+  # @param [Integer] item_id
+  # @param [String] message
+  def notify_admins(item_id:, message:)
     telegram_bot.admin_ids.each do |chat_id|
       telegram_bot.send_message(
-        message: ["№", item[:id], ": ", author[:name], " (", author[:email], ") написал!"].join,
+        message: message,
         keyboard: :link_to_chat,
         chat_id: chat_id,
-        url: conversation_url(item[:id])
-    )
+        url: conversation_url(item_id)
+      )
     end
   end
 
@@ -109,6 +153,15 @@ class Intercom
     item
   end
 
+  def sync_conversations
+    intercom_api.conversations["conversations"].each do |conversation|
+      author_email = conversation.dig "source", "author", "email"
+      next if author_email.to_s.empty?
+
+      add_conversation_author conversation_id: conversation["id"], email: author_email
+    end
+  end
+
   # @param [Integer] id
   # @return [String]
   def conversation_url(id)
@@ -117,6 +170,32 @@ class Intercom
 
   def telegram_bot
     @telegram_bot ||= TelegramBot.new(logger:, redis:)
+  end
+
+  def intercom_api
+    @intercom_api ||= IntercomApi.new(logger:)
+  end
+
+  # @param [Integer] conversation_id
+  # @return [String]
+  def get_conversation_autor(conversation_id)
+    redis.hget conversation_autors_cache_key, conversation_id
+  end
+
+  # @return [Array]
+  def conversation_autors
+    redis.hgetall conversation_autors_cache_key
+  end
+
+  # @param [Integer] conversation_id
+  # @param [String] email
+  def add_conversation_author(conversation_id:, email:)
+    redis.hmset conversation_autors_cache_key, conversation_id, email
+  end
+
+  # @return [String]
+  def conversation_autors_cache_key
+    [base_cache_key, :conversation_autors].join ":"
   end
 
   # @return [String]

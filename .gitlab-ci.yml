@@ -31,6 +31,7 @@ stages:
       --cache-from $IMAGE
       --build-arg TELEGRAM_TOKEN=$TELEGRAM_TOKEN
       --build-arg SENTRY_DSN=$SENTRY_DSN
+      --build-arg INTERCOM_ACCESS_TOKEN=$INTERCOM_ACCESS_TOKEN
       -t $IMAGE
       -f $DOCKERFILE .
     - docker push $IMAGE
@@ -168,6 +169,7 @@ build:
   variables:
     DOCKERFILE: Dockerfile
 
+# TODO: deploy nginx separatelly
 deploy:
   extends:
     - .production
@@ -177,5 +179,8 @@ deploy:
   script:
     - docker tag $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA $IMAGE
     - docker push $IMAGE
-    - docker compose -f /var/www/intercom-support/docker-compose.yml pull app nginx
-    - docker compose -f /var/www/intercom-support/docker-compose.yml up -d app nginx
+    # - docker compose -f /var/www/intercom-support/docker-compose.yml pull app nginx
+    - docker compose -f /var/www/intercom-support/docker-compose.yml up -d app
+  after_script:
+    - |
+      curl $SENTRY_RELEASE_URL -X POST -H "Content-Type: application/json" -d "{\"version\": \"$CI_COMMIT_SHA\"}"
