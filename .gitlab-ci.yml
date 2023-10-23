@@ -98,7 +98,9 @@ build-nginx:
 update-bundle-cache-force:
   extends: .test
   <<: *bundle-update
-  when: manual
+  only:
+    changes:
+    - Gemfile.lock
 
 rubocop:
   before_script:
