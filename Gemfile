@@ -17,4 +17,7 @@ gem "erb", "~> 4.0"
 group :test do
   gem "rubocop"
   gem "rubocop-performance"
+  gem "rspec", "~> 3.12"
+  gem "simplecov", "~> 0.22.0", require: false
+  gem "webmock", "~> 3.19"
 end

@@ -1,10 +1,16 @@
 GEM
   remote: https://rubygems.org/
   specs:
+    addressable (2.8.5)
+      public_suffix (>= 2.0.2, < 6.0)
     ast (2.4.2)
     base64 (0.1.1)
     cgi (0.3.6)
     connection_pool (2.4.1)
+    crack (0.4.5)
+      rexml
+    diff-lcs (1.5.0)
+    docile (1.4.0)
     erb (4.0.3)
       cgi (>= 0.3.3)
     faraday (1.10.3)
@@ -32,6 +38,7 @@ GEM
     faraday-retry (1.0.3)
     faraday_middleware (1.2.0)
       faraday (~> 1.0)
+    hashdiff (1.0.1)
     json (2.6.3)
     language_server-protocol (3.17.0.3)
     logger (1.5.3)
@@ -43,6 +50,7 @@ GEM
     parser (3.2.2.4)
       ast (~> 2.4.1)
       racc
+    public_suffix (5.0.3)
     puma (6.4.0)
       nio4r (~> 2.0)
     racc (1.7.1)
@@ -56,6 +64,19 @@ GEM
       connection_pool
     regexp_parser (2.8.2)
     rexml (3.2.6)
+    rspec (3.12.0)
+      rspec-core (~> 3.12.0)
+      rspec-expectations (~> 3.12.0)
+      rspec-mocks (~> 3.12.0)
+    rspec-core (3.12.2)
+      rspec-support (~> 3.12.0)
+    rspec-expectations (3.12.3)
+      diff-lcs (>= 1.2.0, < 2.0)
+      rspec-support (~> 3.12.0)
+    rspec-mocks (3.12.6)
+      diff-lcs (>= 1.2.0, < 2.0)
+      rspec-support (~> 3.12.0)
+    rspec-support (3.12.1)
     rubocop (1.57.1)
       base64 (~> 0.1.1)
       json (~> 2.3)
@@ -75,6 +96,12 @@ GEM
       rubocop-ast (>= 0.4.0)
     ruby-progressbar (1.13.0)
     ruby2_keywords (0.0.5)
+    simplecov (0.22.0)
+      docile (~> 1.1)
+      simplecov-html (~> 0.11)
+      simplecov_json_formatter (~> 0.1)
+    simplecov-html (0.12.3)
+    simplecov_json_formatter (0.1.4)
     sinatra (3.1.0)
       mustermann (~> 3.0)
       rack (~> 2.2, >= 2.2.4)
@@ -82,6 +109,10 @@ GEM
       tilt (~> 2.0)
     tilt (2.3.0)
     unicode-display_width (2.5.0)
+    webmock (3.19.1)
+      addressable (>= 2.8.0)
+      crack (>= 0.3.2)
+      hashdiff (>= 0.4.0, < 2.0.0)
 
 PLATFORMS
   x86_64-linux
@@ -94,9 +125,12 @@ DEPENDENCIES
   logger (~> 1.5)
   puma (~> 6.4)
   redis (~> 5.0)
+  rspec (~> 3.12)
   rubocop
   rubocop-performance
+  simplecov (~> 0.22.0)
   sinatra (~> 3.0)
+  webmock (~> 3.19)
 
 RUBY VERSION
    ruby 3.2.2p53

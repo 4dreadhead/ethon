@@ -34,12 +34,13 @@ class TelegramBot
   # @param [Symbol] keyboard
   # @param [Integer] chat_id
   # @param [String] url
-  def send_message(message:, keyboard: nil, chat_id: nil, url: nil)
-    @chat = Chat.find_or_initialize(chat_id:, redis:) if chat_id
+  # @param [Array] entities
+  def send_message(message:, keyboard: nil, chat_id: nil, url: nil, entities: nil)
     telegram_api.send_message(
-      chat_id: chat.id,
+      chat_id: chat_id || chat.id,
       reply_markup: build_reply_markup(kind: keyboard, url:),
-      text: message
+      text: message,
+      entities: entities
     )
   end
 
@@ -64,12 +65,6 @@ class TelegramBot
 
   def intercom
     @intercom ||= Intercom.new(logger:, redis:)
-  end
-
-  # @param [String] email
-  # @return [Chat]
-  def init_chat!(email:)
-    @chat = Chat.find_or_initialize(email:, redis:)
   end
 
   private

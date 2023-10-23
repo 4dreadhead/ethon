@@ -15,6 +15,17 @@ class Intercom
     def app_id
       ENV.fetch "INTERCOM_APP_ID"
     end
+
+    # @return [String]
+    def server_url
+      ENV.fetch "SERVER_URL"
+    end
+
+    # @param [String] email
+    # @return [String]
+    def chat_url(chat_id)
+      [server_url, CHAT_PATH, "?uid=", chat_id].join
+    end
   end
 
   # @param [Logger] logger
@@ -33,28 +44,6 @@ class Intercom
     else
       other message
     end
-  end
-
-  # @param [Integer] chat_id
-  # @return [Boolean]
-  def listener_exists?(chat_id)
-    redis.hexists listeners_cache_key, chat_id
-  end
-
-  # @param [Integer] chat_id
-  # @return [Hash]
-  def add_listener(chat_id)
-    redis.hmset listeners_cache_key, chat_id, Time.now.utc.to_i
-  end
-
-  # @param [Integer] chat_id
-  def remove_listener(chat_id)
-    redis.hdel listeners_cache_key, [chat_id]
-  end
-
-  # @return [Array]
-  def listeners
-    redis.hgetall listeners_cache_key
   end
 
   private
@@ -93,11 +82,12 @@ class Intercom
       return self
     end
 
-    chat = telegram_bot.init_chat! email: author[:email]
+    chat_id = Chat.email_to_id(email: author[:email], redis:)
     telegram_bot.send_message(
       message: ["№", item[:id], ": ", "Вам ответил оператор!"].join,
       keyboard: :link_to_chat,
-      url: chat_url(chat.id)
+      chat_id:,
+      url: self.class.chat_url(chat_id)
     )
   end
 
@@ -143,12 +133,6 @@ class Intercom
     [APPS_URL, self.class.app_id, "/conversations/", id].join
   end
 
-  # @param [String] email
-  # @return [String]
-  def chat_url(chat_id)
-    [server_url, CHAT_PATH, "?uid=", chat_id].join
-  end
-
   # @param [Hash] message
   def other(message)
     unless message.is_a? Hash
@@ -185,17 +169,7 @@ class Intercom
   end
 
   # @return [String]
-  def listeners_cache_key
-    [base_cache_key, :listeners].join ":"
-  end
-
-  # @return [String]
   def base_cache_key
     self.class.name
-  end
-
-  # @return [String]
-  def server_url
-    @server_url ||= ENV.fetch "SERVER_URL"
   end
 end

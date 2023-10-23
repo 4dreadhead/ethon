@@ -17,13 +17,17 @@ class TelegramApi
   end
 
   # https://core.telegram.org/bots/api#sendmessage
-  # @param [Hash] message
-  def send_message(chat_id:, reply_markup:, text:)
+  # @param [Integer] chat_id
+  # @param [Hash] reply_markup
+  # @param [String] text
+  # @param [Array] entities
+  def send_message(chat_id:, reply_markup:, text:, entities: nil)
     message = {
       chat_id:,
       reply_markup:,
       text:
     }
+    message[:entities] = entities if entities
     logger.debug "#{self.class.name}#send_message:"
     logger.debug(message)
     resp = connection.post request_url("sendMessage") do |req|

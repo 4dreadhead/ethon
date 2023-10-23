@@ -5,4 +5,6 @@
 /scripts
 /docker-compose.yml
 /.env
+/.env.test.local
 /Makefile
+/coverage

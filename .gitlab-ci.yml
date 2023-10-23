@@ -9,6 +9,7 @@ stages:
   variables:
     IMAGE: $CI_REGISTRY_IMAGE:test-3.2.2
     BUNDLE_PATH: vendor
+    LOGLEVEL: warn
 
 .production:
   environment:
@@ -111,6 +112,29 @@ rubocop:
   script:
     - bundle exec rubocop -P
   stage: rubocop
+
+rspec:
+  extends:
+    - .test
+    - .pull-bundle-cache
+  stage: test
+  except:
+    - main
+  before_script:
+    - *bundle-install
+  dependencies:
+    - rubocop
+  image: $IMAGE
+  script:
+    - bundle exec rspec --no-fail-fast
+  artifacts:
+    expire_in: 1d
+    paths:
+      - coverage/
+    name: Pipeline $CI_PIPELINE_ID Coverage Report
+  coverage: '/LOC \((\d+\.\d+%)\) covered.$/'
+  variables:
+    COVERAGE: 1
 
 variables:
   SAST_DEFAULT_ANALYZERS: brakeman
