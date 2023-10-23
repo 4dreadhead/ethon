@@ -137,6 +137,7 @@ rspec:
   coverage: '/LOC \((\d+\.\d+%)\) covered.$/'
   variables:
     COVERAGE: 1
+    TELEGRAM_TOKEN: TELEGRAM_TOKEN
 
 variables:
   SAST_DEFAULT_ANALYZERS: brakeman
