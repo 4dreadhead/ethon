@@ -19,8 +19,10 @@ class TelegramBot
           return self
         end
 
-        bot.chat.phone_number! phone_number
-        bot.intercom.add_listener bot.chat.id
+        bot.chat.phone_number = phone_number
+        bot.chat.first_name = contact[:first_name]
+        bot.chat.last_name = contact[:last_name]
+        bot.chat.save!
         bot.send_message message: Texts.build(:successfully)
         self
       end

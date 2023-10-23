@@ -3,6 +3,7 @@ stages:
   - rubocop
   - test
   - build
+  - deploy
 
 .test:
   variables:
@@ -10,6 +11,10 @@ stages:
     BUNDLE_PATH: vendor
 
 .production:
+  environment:
+    name: production
+  tags:
+    - intercom-support-production
   variables:
     IMAGE: $CI_REGISTRY_IMAGE
 
@@ -21,11 +26,22 @@ stages:
     - docker login -u $CI_REGISTRY_USER -p $CI_JOB_TOKEN $CI_REGISTRY
   script:
     - docker pull $IMAGE || true
-    - docker build --cache-from $IMAGE --build-arg PORT=$PORT -t $IMAGE -f $DOCKERFILE .
+    - docker build
+      --cache-from $IMAGE
+      --build-arg TELEGRAM_TOKEN=$TELEGRAM_TOKEN
+      -t $IMAGE
+      -f $DOCKERFILE .
     - docker push $IMAGE
 
+.deploy:
+  stage: deploy
+  before_script:
+    - docker login -u $CI_REGISTRY_USER -p $CI_JOB_TOKEN $CI_REGISTRY
+  after_script:
+    - docker system prune -a -f --volumes
+
 .pull-bundle-cache:
-  artifacts:
+  cache:
     paths:
       - $BUNDLE_PATH
 
@@ -35,8 +51,7 @@ stages:
   - bundle install --prefer-local --quiet --jobs $(nproc) "${FLAGS[@]}"
 
 .bundle-update: &bundle-update
-  artifacts:
-    expire_in: 30d
+  cache:
     paths:
       - $BUNDLE_PATH
     when: on_success
@@ -63,6 +78,22 @@ build-test-image:
     - docker push $IMAGE
   when: manual
 
+build-nginx:
+  #only:
+  #  - main
+  image: docker:24.0.2
+  services:
+    - docker:24.0.2-dind
+  stage: prepare
+  before_script:
+    - docker login -u $CI_REGISTRY_USER -p $CI_JOB_TOKEN $CI_REGISTRY
+  script:
+    - docker build -t $IMAGE ./nginx
+    - docker push $IMAGE
+  when: manual
+  variables:
+    IMAGE: $CI_REGISTRY_IMAGE:nginx
+
 update-bundle-cache-force:
   extends: .test
   <<: *bundle-update
@@ -85,7 +116,6 @@ variables:
   SAST_DEFAULT_ANALYZERS: brakeman
   SAST_EXCLUDED_ANALYZERS: eslint,semgrep,nodejs-scan
   SECRET_DETECTION_EXCLUDED_PATHS: vendor,node_modules
-  PORT: 3000
 
 include:
 - template: Security/SAST.gitlab-ci.yml
@@ -99,8 +129,20 @@ build:
     - .build
   only:
     - main
+  when: manual
   after_script:
     - docker tag $IMAGE $CI_REGISTRY_$IMAGE:$CI_COMMIT_SHA
     - docker push $CI_REGISTRY_$IMAGE:$CI_COMMIT_SHA
   variables:
     DOCKERFILE: Dockerfile
+
+deploy:
+  extends:
+    - .production
+    - .deploy
+  when: manual
+  script:
+    - docker tag $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA $IMAGE
+    - docker push $IMAGE
+    - docker compose -f /var/www/intercom-support/docker-compose.yml pull app nginx
+    - docker compose -f /var/www/intercom-support/docker-compose.yml up -d app nginx

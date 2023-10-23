@@ -26,16 +26,19 @@ class TelegramBot
     chat_id = message.dig :chat, :id
     return logger.error "chat_id not found in message: #{message.to_json}" unless chat_id
 
-    @chat = Chat.find_or_initialize(chat_id: chat_id, redis:)
+    @chat = Chat.find_or_initialize(chat_id:, redis:)
     Strategies.find(bot: self, message:, logger:, redis:).perform
   end
 
   # @param [String] message
   # @param [Symbol] keyboard
-  def send_message(message:, keyboard: nil)
+  # @param [Integer] chat_id
+  # @param [String] url
+  def send_message(message:, keyboard: nil, chat_id: nil, url: nil)
+    @chat = Chat.find_or_initialize(chat_id:, redis:) if chat_id
     telegram_api.send_message(
-      chat_id: 813570115,
-      reply_markup: build_reply_markup(kind: keyboard),
+      chat_id: chat.id,
+      reply_markup: build_reply_markup(kind: keyboard, url:),
       text: message
     )
   end
@@ -54,8 +57,19 @@ class TelegramBot
     [base_cache_key, chat.id].join ":"
   end
 
+  # @return [Array]
+  def admin_ids
+    Chat.admin_ids(redis:)
+  end
+
   def intercom
     @intercom ||= Intercom.new(logger:, redis:)
+  end
+
+  # @param [String] email
+  # @return [Chat]
+  def init_chat!(email:)
+    @chat = Chat.find_or_initialize(email:, redis:)
   end
 
   private
@@ -65,8 +79,9 @@ class TelegramBot
   end
 
   # @param [Symbol] kind
+  # @param [String] url
   # @return [Hash]
-  def build_reply_markup(kind:)
+  def build_reply_markup(kind:, url: nil)
     case kind
     when :share_phone
       {
@@ -78,12 +93,12 @@ class TelegramBot
         ],
         resize_keyboard: true
       }
-    when :link
+    when :link_to_chat
       {
         inline_keyboard: [
           [
             text: "Перейти",
-            url: "http://128.140.45.118/link"
+            url: url
           ]
         ],
         resize_keyboard: true

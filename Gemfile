@@ -12,6 +12,7 @@ gem "json", "~> 2.6"
 gem "faraday", "~> 1.10"
 gem "faraday_middleware", "~> 1.2"
 gem "redis", "~> 5.0"
+gem "erb", "~> 4.0"
 
 group :test do
   gem "rubocop"

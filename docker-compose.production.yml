@@ -6,41 +6,45 @@ networks:
 version: "3.7"
 services:
   app:
-    build:
-      cache_from:
-        - registry.gitlab.evosoft.xyz/reklama/chat-bots/intercom-support
-      context: .
-      args:
-        TELEGRAM_TOKEN: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
     depends_on:
       - redis
+    deploy:
+      update_config:
+        delay: 30s
+        order: start-first
     environment:
       - LOGLEVEL=debug
-      - RAKE_ENV=development
-      # - TELEGRAM_TOKEN=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+      - RAKE_ENV=production
       - REDIS_URL=redis://redis:6379
-      - SERVER_URL=https://localhost
-      - INTERCOM_APP_ID=INTERCOM_APP_ID
+      - SERVER_URL=https://intercom-bot.evosoft.xyz
+      - INTERCOM_APP_ID=efm7fqqz
     image: registry.gitlab.evosoft.xyz/reklama/chat-bots/intercom-support
     command: "puma"
+    restart: always
     networks:
       - backend
     volumes:
-      - ./tmp/pids:/var/app/tmp/pids
-      - ./vendor:/var/app/vendor
+      - /var/www/vendor:/var/app/vendor
   redis:
     image: redis:5-alpine
-    ports:
-      - 127.0.0.1:6379:6379
+    restart: always
     networks:
       - backend
     volumes:
-      - /var/www/evosoft/chat-bots/redis/data:/data
-  nginx:
-    build:
-      context: ./nginx
+      - /var/www/redis/data:/data
+  nginx: # https://hub.docker.com/_/nginx
     depends_on:
       - app
+    deploy:
+      restart_policy:
+        condition: on-failure
+        delay: 10s
+        max_attempts: 5
+        window: 30s
+      update_config:
+        parallelism: 2
+        delay: 10s
+        order: start-first
     image: registry.gitlab.evosoft.xyz/reklama/chat-bots/intercom-support:nginx
     ports:
       - "80:80"

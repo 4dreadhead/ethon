@@ -3,7 +3,10 @@ GEM
   specs:
     ast (2.4.2)
     base64 (0.1.1)
+    cgi (0.3.6)
     connection_pool (2.4.1)
+    erb (4.0.3)
+      cgi (>= 0.3.3)
     faraday (1.10.3)
       faraday-em_http (~> 1.0)
       faraday-em_synchrony (~> 1.0)
@@ -84,6 +87,7 @@ PLATFORMS
   x86_64-linux
 
 DEPENDENCIES
+  erb (~> 4.0)
   faraday (~> 1.10)
   faraday_middleware (~> 1.2)
   json (~> 2.6)
