@@ -13,6 +13,7 @@ services:
       args:
         TELEGRAM_TOKEN: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
         SENTRY_DSN: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+        INTERCOM_ACCESS_TOKEN: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
     depends_on:
       - redis
     environment:

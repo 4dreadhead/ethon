@@ -74,8 +74,8 @@ class TelegramBot
         redis.hgetall(admins_cache_key).keys
       end
 
+      # @param [Integer] id
       # @param [Redis] redis
-      # @return [Array]
       def add_admin(id:, redis:)
         redis.hmset admins_cache_key, id, "1"
       end
