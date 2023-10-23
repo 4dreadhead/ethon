@@ -19,7 +19,7 @@ COPY config config
 COPY lib lib
 COPY templates templates
 COPY tmp tmp
-COPY config.ru Gemfile Gemfile.lock init.rb ./
+COPY .irbrc config.ru Gemfile Gemfile.lock init.rb ./
 
 HEALTHCHECK --start-period=5m --timeout=30s CMD curl -f http://127.0.0.1:$PORT/healthcheck
 VOLUME ["/var/app/tmp/pids", "/var/app/vendor"]
