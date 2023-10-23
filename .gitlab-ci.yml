@@ -139,7 +139,6 @@ deploy:
   extends:
     - .production
     - .deploy
-  when: manual
   script:
     - docker tag $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA $IMAGE
     - docker push $IMAGE
