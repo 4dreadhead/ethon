@@ -8,7 +8,6 @@ if ENV["COVERAGE"]
     add_filter "vendor"
 
     add_group "Lib", "lib"
-    add_group "Parsers", "parsers"
 
     enable_coverage :branch
     primary_coverage :branch
