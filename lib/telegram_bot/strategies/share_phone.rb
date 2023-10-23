@@ -23,7 +23,11 @@ class TelegramBot
         bot.chat.first_name = contact[:first_name]
         bot.chat.last_name = contact[:last_name]
         bot.chat.save!
-        bot.send_message message: Texts.build(:successfully)
+        bot.send_message message: Texts.build(:successfully),
+                         entities: Texts.entities_for(
+                           :successfully,
+                           url: Intercom.chat_url(bot.chat.id)
+                         )
         self
       end
 

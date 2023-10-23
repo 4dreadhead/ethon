@@ -6,7 +6,11 @@ class TelegramBot
     class Unknown < Base
       def perform
         bot.state! nil
-        bot.send_message message: Texts.build(:do_not_understand)
+        bot.send_message message: Texts.build(:do_not_understand),
+                         entities: Texts.entities_for(
+                           :do_not_understand,
+                           url: Intercom.chat_url(bot.chat.id)
+                         )
       end
     end
   end
