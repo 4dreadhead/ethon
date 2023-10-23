@@ -33,6 +33,7 @@ class Intercom
     @redis = redis
   end
 
+  # TODO: ticket.state.updated
   # @param [Hash] message
   def webhook!(message)
     case message[:topic]

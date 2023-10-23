@@ -13,6 +13,7 @@ require "webmock/rspec"
 
 require_relative "../lib/cached"
 require_relative "../lib/logging"
+require_relative "../lib/sentry"
 require_relative "../lib/intercom"
 require_relative "../lib/telegram_api"
 require_relative "../lib/telegram_bot"
