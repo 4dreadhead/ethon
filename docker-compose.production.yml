@@ -16,7 +16,8 @@ services:
       - LOGLEVEL=debug
       - RAKE_ENV=production
       - REDIS_URL=redis://redis:6379
-      - SERVER_URL=https://128.140.45.118
+      - SERVER_URL=https://intercom-bot.evosoft.xyz
+      - INTERCOM_APP_ID=efm7fqqz
     image: registry.gitlab.evosoft.xyz/reklama/chat-bots/intercom-support
     command: "puma"
     restart: always

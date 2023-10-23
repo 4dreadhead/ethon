@@ -2,6 +2,9 @@
 
 ## Production
 
+* [t.me/evo_support_bot](t.me/evo_support_bot)
+* [intercom-bot.evosoft.xyz](https://intercom-bot.evosoft.xyz)
+
 Loogs of an app
 
 ```shell script
@@ -24,4 +27,5 @@ bundle exec puma
 
 ## ENvs
 
-* INTERCOM_APP_ID
+* __SERVER_URL__: `https://intercom-bot.evosoft.xyz`
+* __INTERCOM_APP_ID__: `someid`

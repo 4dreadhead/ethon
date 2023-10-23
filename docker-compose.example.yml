@@ -12,16 +12,15 @@ services:
       context: .
       args:
         TELEGRAM_TOKEN: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-        INTERCOM_APP_ID: xxxx
     depends_on:
       - redis
     environment:
       - LOGLEVEL=debug
       - RAKE_ENV=development
       # - TELEGRAM_TOKEN=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-      # - INTERCOM_APP_ID=xxxx
       - REDIS_URL=redis://redis:6379
       - SERVER_URL=https://localhost
+      - INTERCOM_APP_ID=INTERCOM_APP_ID
     image: registry.gitlab.evosoft.xyz/reklama/chat-bots/intercom-support
     command: "puma"
     networks:

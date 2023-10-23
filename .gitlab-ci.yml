@@ -29,7 +29,6 @@ stages:
     - docker build
       --cache-from $IMAGE
       --build-arg TELEGRAM_TOKEN=$TELEGRAM_TOKEN
-      --build-arg INTERCOM_APP_ID=$INTERCOM_APP_ID
       -t $IMAGE
       -f $DOCKERFILE .
     - docker push $IMAGE
@@ -128,8 +127,8 @@ build:
   extends:
     - .production
     - .build
-  # only:
-    # - main
+  only:
+    - main
   when: manual
   after_script:
     - docker tag $IMAGE $CI_REGISTRY_$IMAGE:$CI_COMMIT_SHA
@@ -143,5 +142,7 @@ deploy:
     - .deploy
   when: manual
   script:
-    - docker compose -f /var/www/intercom-support/docker-compose.yml pull
-    - docker compose -f /var/www/intercom-support/docker-compose.yml up -d
+    - docker tag $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA $IMAGE
+    - docker push $IMAGE
+    - docker compose -f /var/www/intercom-support/docker-compose.yml pull app nginx
+    - docker compose -f /var/www/intercom-support/docker-compose.yml up -d app nginx
