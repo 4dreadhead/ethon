@@ -67,6 +67,19 @@ class Intercom
     item = webhook_item! message
     author = webhook_author! item
     chat_id = TelegramBot::Chat.email_to_id(email: author[:email], redis:)
+    unless chat_id
+      logger.warn "Chat not found! author: #{author.to_json}"
+      return Sentry.capture_message(
+        "Chat not found!",
+        tags: {
+          author_id: author[:id],
+          author_email: author[:email],
+          author_name: author[:name],
+          author_type: author[:type]
+        }
+      )
+    end
+
     telegram_bot.send_message(
       message: ["№", item[:id], ": ", "Вам ответил оператор!"].join,
       keyboard: :link_to_chat,

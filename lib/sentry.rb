@@ -11,4 +11,5 @@ Sentry.init do |config|
   config.enabled_environments = %w[production]
   config.logger = Logging.logger
   config.traces_sample_rate = 0.2
+  config.background_worker_threads = 0
 end
