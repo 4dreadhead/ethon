@@ -169,7 +169,6 @@ build:
   variables:
     DOCKERFILE: Dockerfile
 
-# TODO: deploy nginx separatelly
 deploy:
   extends:
     - .production
@@ -179,8 +178,17 @@ deploy:
   script:
     - docker tag $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA $IMAGE
     - docker push $IMAGE
-    # - docker compose -f /var/www/intercom-support/docker-compose.yml pull app nginx
     - docker compose -f /var/www/intercom-support/docker-compose.yml up -d app
   after_script:
     - |
       curl -s $SENTRY_RELEASE_URL -X POST -H "Content-Type: application/json" -d "{\"version\": \"$CI_COMMIT_SHA\"}" > /dev/null
+
+deploy-nginx:
+  extends:
+    - .production
+    - .deploy
+  only:
+    - main
+  script:
+    - docker compose -f /var/www/intercom-support/docker-compose.yml up -d nginx
+  when: manual
