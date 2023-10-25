@@ -1,3 +1,8 @@
+networks:
+  frontend:
+    attachable: true
+  backend:
+
 version: "3.7"
 services:
   app:
@@ -5,14 +10,43 @@ services:
       cache_from:
         - registry.gitlab.evosoft.xyz/reklama/chat-bots/intercom-support
       context: .
+      args:
+        TELEGRAM_TOKEN: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+        SENTRY_DSN: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+        INTERCOM_ACCESS_TOKEN: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+    depends_on:
+      - redis
     environment:
       - LOGLEVEL=debug
       - RAKE_ENV=development
+      # - TELEGRAM_TOKEN=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+      - REDIS_URL=redis://redis:6379
+      - SERVER_URL=https://localhost
+      - INTERCOM_APP_ID=INTERCOM_APP_ID
     image: registry.gitlab.evosoft.xyz/reklama/chat-bots/intercom-support
     command: "puma"
-    network_mode: "host"
-    ports:
-      - 3000:3000
+    networks:
+      - backend
     volumes:
       - ./tmp/pids:/var/app/tmp/pids
       - ./vendor:/var/app/vendor
+  redis:
+    image: redis:5-alpine
+    ports:
+      - 127.0.0.1:6379:6379
+    networks:
+      - backend
+    volumes:
+      - /var/www/evosoft/chat-bots/redis/data:/data
+  nginx:
+    build:
+      context: ./nginx
+    depends_on:
+      - app
+    image: registry.gitlab.evosoft.xyz/reklama/chat-bots/intercom-support:nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    networks:
+      - frontend
+      - backend

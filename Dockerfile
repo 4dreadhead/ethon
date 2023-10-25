@@ -1,5 +1,15 @@
 FROM ruby:3.2.2-bullseye
 
+ARG TELEGRAM_TOKEN
+ARG SENTRY_DSN
+ARG INTERCOM_ACCESS_TOKEN
+ENV PORT 3000
+ENV TELEGRAM_TOKEN $TELEGRAM_TOKEN
+ENV SENTRY_DSN $SENTRY_DSN
+ENV INTERCOM_ACCESS_TOKEN $INTERCOM_ACCESS_TOKEN
+
+RUN apt-get install -qq -y curl
+
 RUN mkdir /var/app
 RUN echo "gem: --no-ri --no-rdoc" >> ~/.gemrc && \
     gem install bundler --no-document && \
@@ -11,9 +21,10 @@ WORKDIR /var/app
 
 COPY config config
 COPY lib lib
+COPY templates templates
 COPY tmp tmp
-COPY config.ru Gemfile Gemfile.lock init.rb ./
+COPY .irbrc config.ru Gemfile Gemfile.lock init.rb ./
 
-# HEALTHCHECK --start-period=5m --timeout=30s CMD bundle exec ruby healthcheck.rb
+HEALTHCHECK --start-period=5m --timeout=30s CMD curl -f http://127.0.0.1:$PORT/healthcheck
 VOLUME ["/var/app/tmp/pids", "/var/app/vendor"]
 ENTRYPOINT ["ruby", "/var/app/init.rb"]

@@ -5,5 +5,20 @@ git_source(:github) { |repo| "https://github.com/#{repo}.git" }
 
 ruby "3.2.2"
 
-gem "puma"
+gem "puma", "~> 6.4"
 gem "sinatra", "~> 3.0"
+gem "logger", "~> 1.5"
+gem "json", "~> 2.6"
+gem "faraday", "~> 1.10"
+gem "faraday_middleware", "~> 1.2"
+gem "redis", "~> 5.0"
+gem "erb", "~> 4.0"
+gem "sentry-ruby", "~> 5.12"
+
+group :test do
+  gem "rubocop"
+  gem "rubocop-performance"
+  gem "rspec", "~> 3.12"
+  gem "simplecov", "~> 0.22.0", require: false
+  gem "webmock", "~> 3.19"
+end

@@ -1,0 +1,186 @@
+stages:
+  - prepare
+  - rubocop
+  - test
+  - build
+  - deploy
+
+.test:
+  variables:
+    IMAGE: $CI_REGISTRY_IMAGE:test-3.2.2
+    BUNDLE_PATH: vendor
+    LOGLEVEL: warn
+
+.production:
+  environment:
+    name: production
+  tags:
+    - intercom-support-production
+  variables:
+    IMAGE: $CI_REGISTRY_IMAGE
+
+.build:
+  image: docker:24.0.2
+  services:
+    - docker:24.0.2-dind
+  before_script:
+    - docker login -u $CI_REGISTRY_USER -p $CI_JOB_TOKEN $CI_REGISTRY
+  script:
+    - docker pull $IMAGE || true
+    - docker build
+      --cache-from $IMAGE
+      --build-arg TELEGRAM_TOKEN=$TELEGRAM_TOKEN
+      --build-arg SENTRY_DSN=$SENTRY_DSN
+      --build-arg INTERCOM_ACCESS_TOKEN=$INTERCOM_ACCESS_TOKEN
+      -t $IMAGE
+      -f $DOCKERFILE .
+    - docker push $IMAGE
+
+.deploy:
+  stage: deploy
+  before_script:
+    - docker login -u $CI_REGISTRY_USER -p $CI_JOB_TOKEN $CI_REGISTRY
+  after_script:
+    - docker system prune -a -f --volumes
+
+.pull-bundle-cache:
+  cache:
+    paths:
+      - $BUNDLE_PATH
+
+.bundle-install: &bundle-install
+  - bundle config set --local without "development"
+  - bundle config --local path $BUNDLE_PATH
+  - bundle install --prefer-local --quiet --jobs $(nproc) "${FLAGS[@]}"
+
+.bundle-update: &bundle-update
+  cache:
+    paths:
+      - $BUNDLE_PATH
+    when: on_success
+  except:
+    - main
+  image: $IMAGE
+  script:
+    - *bundle-install
+  stage: prepare
+
+build-test-image:
+  except:
+    - main
+  extends:
+    - .test
+  image: docker:24.0.2
+  services:
+    - docker:24.0.2-dind
+  stage: prepare
+  before_script:
+    - docker login -u $CI_REGISTRY_USER -p $CI_JOB_TOKEN $CI_REGISTRY
+  script:
+    - docker build -t $IMAGE -f spec/Dockerfile .
+    - docker push $IMAGE
+  when: manual
+
+build-nginx:
+  #only:
+  #  - main
+  image: docker:24.0.2
+  services:
+    - docker:24.0.2-dind
+  stage: prepare
+  before_script:
+    - docker login -u $CI_REGISTRY_USER -p $CI_JOB_TOKEN $CI_REGISTRY
+  script:
+    - docker build -t $IMAGE ./nginx
+    - docker push $IMAGE
+  when: manual
+  variables:
+    IMAGE: $CI_REGISTRY_IMAGE:nginx
+
+update-bundle-cache:
+  extends: .test
+  <<: *bundle-update
+  only:
+    changes:
+    - Gemfile.lock
+
+update-bundle-cache-force:
+  extends: .test
+  <<: *bundle-update
+  when: manual
+
+rubocop:
+  before_script:
+  - *bundle-install
+  except:
+    - main
+  extends:
+  - .test
+  - .pull-bundle-cache
+  image: $IMAGE
+  script:
+    - bundle exec rubocop -P
+  stage: rubocop
+
+rspec:
+  extends:
+    - .test
+    - .pull-bundle-cache
+  stage: test
+  except:
+    - main
+  before_script:
+    - *bundle-install
+  dependencies:
+    - rubocop
+  image: $IMAGE
+  script:
+    - bundle exec rspec --no-fail-fast
+  artifacts:
+    expire_in: 1d
+    paths:
+      - coverage/
+    name: Pipeline $CI_PIPELINE_ID Coverage Report
+  coverage: '/LOC \((\d+\.\d+%)\) covered.$/'
+  variables:
+    COVERAGE: 1
+    TELEGRAM_TOKEN: TELEGRAM_TOKEN
+
+variables:
+  SAST_DEFAULT_ANALYZERS: brakeman
+  SAST_EXCLUDED_ANALYZERS: eslint,semgrep,nodejs-scan
+  SECRET_DETECTION_EXCLUDED_PATHS: vendor,node_modules
+
+include:
+- template: Security/SAST.gitlab-ci.yml
+- template: Security/Dependency-Scanning.gitlab-ci.yml
+- template: Security/Secret-Detection.gitlab-ci.yml
+
+build:
+  stage: build
+  extends:
+    - .production
+    - .build
+  only:
+    - main
+  after_script:
+    - docker tag $IMAGE $CI_REGISTRY_$IMAGE:$CI_COMMIT_SHA
+    - docker push $CI_REGISTRY_$IMAGE:$CI_COMMIT_SHA
+  variables:
+    DOCKERFILE: Dockerfile
+
+# TODO: deploy nginx separatelly
+deploy:
+  extends:
+    - .production
+    - .deploy
+  only:
+    - main
+  script:
+    - docker tag $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA $IMAGE
+    - docker push $IMAGE
+    # - docker compose -f /var/www/intercom-support/docker-compose.yml pull app nginx
+    - docker compose -f /var/www/intercom-support/docker-compose.yml up -d app
+  after_script:
+    - |
+      curl -s $SENTRY_RELEASE_URL -X POST -H "Content-Type: application/json" -d "{\"version\": \"$CI_COMMIT_SHA\"}" > /dev/null
